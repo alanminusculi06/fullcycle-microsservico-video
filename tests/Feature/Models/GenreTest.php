@@ -55,11 +55,12 @@ class GenreTest extends TestCase
         );
     }
 
-    // public function testDelete()
-    // {
-    //     factory(Genre::class, 1)->create();
-    //     Genre::truncate();
-    //     $genres = Genre::all();
-    //     $this->assertCount(0, $genres);
-    // }
+    public function testDelete()
+    {
+        $genre = Genre::create(['name' => 'Test Delete']);
+        $genre->refresh();
+        Genre::where('id', $genre->id)->delete();
+        $genres = Genre::find($genre->id);
+        $this->assertNull($genres);
+    }
 }
