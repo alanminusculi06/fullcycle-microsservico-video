@@ -65,11 +65,12 @@ class CategoryTest extends TestCase
         );
     }
 
-    // public function testDelete()
-    // {
-    //     factory(Category::class, 1)->create();
-    //     Category::truncate();
-    //     $categories = Category::all();
-    //     $this->assertCount(0, $categories);
-    // }
+    public function testDelete()
+    {
+        $category = Category::create(['name' => 'Test Delete']);
+        $category->refresh();
+        Category::where('id', $category->id)->delete();
+        $categories = Category::find($category->id);
+        $this->assertNull($categories);
+    }
 }
