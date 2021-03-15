@@ -97,13 +97,13 @@ class CategoryControllerTest extends TestCase
     }
 
 
-    // public function testDelete()
-    // {
-    //     $response = $this->json('DELETE', route('categories.destroy', ['category' => $this->category->id]));
-    //     $response->assertStatus(204);
-    //     $this->assertNull(Category::find($this->category->id));
-    //     $this->assertNotNull(Category::withTrashed()->find($this->category->id));
-    // }
+    public function testDelete()
+    {
+        $response = $this->json('DELETE', route('categories.destroy', ['category' => $this->category->id]));
+        $response->assertStatus(204);
+        $this->assertNull(Category::find($this->category->id));
+        $this->assertNotNull(Category::withTrashed()->find($this->category->id));
+    }
 
     protected function routeStore()
     {

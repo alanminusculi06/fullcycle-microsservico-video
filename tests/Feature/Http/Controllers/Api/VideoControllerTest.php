@@ -120,6 +120,14 @@ class VideoControllerTest extends TestCase
         ];
         $this->assertInvalidationInStoreAction($data, 'exists');
         $this->assertInvalidationInUpdateAction($data, 'exists');
+
+        $category = factory(Category::class)->create();
+        $category->delete();
+        $data = [
+            'categories_id' => [$category->id]
+        ];
+        $this->assertInvalidationInStoreAction($data, 'exists');
+        $this->assertInvalidationInUpdateAction($data, 'exists');
     }
 
     public function testInvalidationGenresIdField()
@@ -132,6 +140,14 @@ class VideoControllerTest extends TestCase
 
         $data = [
             'genres_id' => [100]
+        ];
+        $this->assertInvalidationInStoreAction($data, 'exists');
+        $this->assertInvalidationInUpdateAction($data, 'exists');
+
+        $genre = factory(Genre::class)->create();
+        $genre->delete();
+        $data = [
+            'genres_id' => [$genre->id]
         ];
         $this->assertInvalidationInStoreAction($data, 'exists');
         $this->assertInvalidationInUpdateAction($data, 'exists');
@@ -169,20 +185,23 @@ class VideoControllerTest extends TestCase
         ]);
     }
 
-    public function testRollbackStore()
+    protected function assertHasCategory($videoId, $categoryId)
     {
-        $controller = $this->mockControllerTestRollback('rulesStore');
-
-        $request = Mockery::mock(Request::class);
-
-        try {
-            $controller->store($request);
-        } catch (TestException $e) {
-            $this->assertCount(1, Video::all());
-        }
+        $this->assertDatabaseHas('category_genre', [
+            'video_id' => $videoId,
+            'category_id' => $categoryId
+        ]);
     }
 
-    protected function mockControllerTestRollback($validationRules)
+    protected function assertHasGenre($videoId, $genreId)
+    {
+        $this->assertDatabaseHas('category_genre', [
+            'video_id' => $videoId,
+            'genre_id' => $genreId
+        ]);
+    }
+
+    public function testRollbackStore()
     {
         $controller = Mockery::mock(VideoController::class)
             ->makePartial()
@@ -194,7 +213,7 @@ class VideoControllerTest extends TestCase
             ->andReturn($this->sendData);
 
         $controller
-            ->shouldReceive($validationRules)
+            ->shouldReceive('rulesStore')
             ->withAnyArgs()
             ->andReturn([]);
 
@@ -203,7 +222,56 @@ class VideoControllerTest extends TestCase
             ->once()
             ->andThrow(new TestException());
 
-        return $controller;
+        $request = Mockery::mock(Request::class);
+
+        $error = false;
+        try {
+            $controller->store($request);
+        } catch (TestException $e) {
+            $this->assertCount(1, Video::all());
+            $error = true;
+        }
+
+        $this->assertTrue($error);
+    }
+
+    public function testRollbackUpdate()
+    {
+        $controller = Mockery::mock(VideoController::class)
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $controller
+            ->shouldReceive('findOrFail')
+            ->withAnyArgs()
+            ->andReturns($this->video);
+
+        $controller
+            ->shouldReceive('validate')
+            ->withAnyArgs()
+            ->andReturn(['name' => 'test',]);
+
+        $controller
+            ->shouldReceive('rulesUpdate')
+            ->withAnyArgs()
+            ->andReturn([]);
+
+        $controller
+            ->shouldReceive('handleRelations')
+            ->once()
+            ->andThrow(new TestException());
+
+        $request = Mockery::mock(Request::class);
+
+        $error = false;
+        try {
+            $controller->update($request, 1);
+        } catch (TestException $e) {
+            $this->assertCount(1, Video::all());
+            $error = true;
+        }
+
+        $this->assertTrue($error);
     }
 
     public function testShow()
