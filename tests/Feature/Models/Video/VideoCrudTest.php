@@ -1,53 +1,33 @@
 <?php
 
-namespace Tests\Feature\Models;
+namespace Tests\Feature\Models\Video;
 
 use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Tests\TestCase;
 
-class VideoTest extends TestCase
+class VideoCrudTest extends BaseVideoTestCase
 {
-    use DatabaseMigrations;
-
-    private $data;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->data = [
-            'title' => 'title',
-            'description' => 'description',
-            'year_launched' => 2010,
-            'rating' => Video::RATING_LIST[0],
-            'duration' => 90
-        ];
-    }
-
     public function testList()
     {
         factory(Video::class)->create();
         $videos = Video::all();
         $this->assertCount(1, $videos);
         $videoKeys = array_keys($videos->first()->getAttributes());
-        $this->assertEqualsCanonicalizing(
-            [
-                'id',
-                'title',
-                'description',
-                'year_launched',
-                'opened',
-                'rating',
-                'duration',
-                'created_at',
-                'updated_at',
-                'deleted_at'
-            ],
-            $videoKeys
-        );
+        $this->assertEqualsCanonicalizing([
+            'id',
+            'title',
+            'description',
+            'year_launched',
+            'opened',
+            'rating',
+            'duration',
+            'video_file',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+        ], $videoKeys);
     }
 
     public function testCreateWithBasicFields()
@@ -197,5 +177,15 @@ class VideoTest extends TestCase
             'video_id' => $videoId,
             'genre_id' => $genreId
         ]);
+    }
+
+    public function testDelete()
+    {
+        $video = factory(Video::class)->create();
+        $video->delete();
+        $this->assertNull(Video::find($video->id));
+
+        $video->restore();
+        $this->assertNotNull(Video::find($video->id));
     }
 }
