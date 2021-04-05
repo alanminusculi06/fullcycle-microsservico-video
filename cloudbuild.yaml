@@ -1,5 +1,5 @@
 steps:
-  - name: "gcr.io/cloud-builder/gcloud"
+  - name: "gcr.io/cloud-builders/gcloud"
     args:
       - kms
       - decrypt
