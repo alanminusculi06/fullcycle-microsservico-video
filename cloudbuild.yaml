@@ -1,5 +1,5 @@
 steps:
-  - name: "grc.io/cloud-builder/gcloud"
+  - name: "gcloud"
     args:
       - kms
       - decrypt
