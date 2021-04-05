@@ -5,7 +5,7 @@ steps:
       - decrypt
       - --ciphertext-file=./storage/credentials/google/service-account-storage.json.enc
       - --plaintext-file=./storage/credentials/google/service-account-storage.json
-      - --local=global
+      - --location=global
       - --keyring=testing
       - --key=service-account
 
