@@ -1,33 +1,76 @@
 steps:
+  - name: "grc.io/cloud-builder/gcloud"
+    args:
+      - kms
+      - decrypt
+      - --ciphertext-file=./storage/credentials/google/service-account-storage.json.enc
+      - --plaintext-file=./storage/credentials/google/service-account-storage.json
+      - --local=global
+      - --keyring=testing
+      - --key=service-account
 
-- id: "Rodando docker-compose"
-  name: 'docker/compose'
-  args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+  - id: "Rodando docker-compose"
+    name: "docker/compose"
+    args: ["-f", "docker-compose.prod.yaml", "up", "-d"]
+    env:
+      - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
+      - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
+      - GOOGLE_CLOUD_STORAGE_BUCKET=micro-videos-catalogo
+      - GOOGLE_CLOUD_STORAGE_API_URI=https://storage.cloud.google.com/micro-videos-catalogo
+      - TESTING_PROD=true
 
-- id: "Chown in /var/www"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec','-u','root','-t','micro-videos-app','chown','-R','www-data:www-data','/var/www']
+  - id: "Chown in /var/www"
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "exec",
+        "-u",
+        "root",
+        "-t",
+        "micro-videos-app",
+        "chown",
+        "-R",
+        "www-data:www-data",
+        "/var/www",
+      ]
 
-- id: "Rodando composer"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'composer', 'install']
+  - id: "Rodando composer"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["exec", "-t", "micro-videos-app", "composer", "install"]
 
-- id: "Copiando .env"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'cp', './.env.example', './.env']
+  - id: "Copiando .env"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["exec", "-t", "micro-videos-app", "cp", "./.env.example", "./.env"]
 
-- id: "Copiando .env.testing"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'cp', './.env.example.testing', './.env.testing']
+  - id: "Copiando .env.testing"
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "exec",
+        "-t",
+        "micro-videos-app",
+        "cp",
+        "./.env.example.testing",
+        "./.env.testing",
+      ]
 
-- id: "Rodando key generate"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'php', 'artisan', 'key:generate']
+  - id: "Rodando key generate"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["exec", "-t", "micro-videos-app", "php", "artisan", "key:generate"]
 
-- id: "Rodando migrações"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'php', 'artisan', 'migrate']
+  - id: "Rodando migrações"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["exec", "-t", "micro-videos-app", "php", "artisan", "migrate"]
 
-- id: "Rodando phpunit"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/vendor/bin/phpunit', '-c', '/var/www/phpunit.xml']
+  - id: "Rodando phpunit"
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "exec",
+        "-t",
+        "micro-videos-app",
+        "php",
+        "/var/www/vendor/bin/phpunit",
+        "-c",
+        "/var/www/phpunit.xml",
+      ]
