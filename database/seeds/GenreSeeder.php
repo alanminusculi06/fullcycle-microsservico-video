@@ -8,7 +8,6 @@ class GenreSeeder extends Seeder
 {
     public function run()
     {
-        // factory(Genre::class, 10)->create();
         $categories = Category::all();
         factory(Genre::class, 100)
             ->create()
