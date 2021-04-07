@@ -16,6 +16,7 @@ class GenreControllerStub extends BasicCrudController
     {
         return [
             'name' => 'required|max:255'
+        ];
     }
 
     protected function rulesUpdate()

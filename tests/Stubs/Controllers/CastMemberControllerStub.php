@@ -17,6 +17,7 @@ class CastMemberControllerStub extends BasicCrudController
         return [
             'name' => 'required|max:255',
             'type' => 'in'
+        ];
     }
 
     protected function rulesUpdate()

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 trait UploadFiles
 {
-    protected $oldFiles = [];
+    public $oldFiles = [];
 
     protected abstract function uploadDir();
 
@@ -25,6 +25,11 @@ trait UploadFiles
                 return $model->getOriginal($fileField);
             }, $filesFiltered);
         });
+    }
+
+    public function relativeFilePath($value)
+    {
+        return "{$this->uploadDir()}/{$value}";
     }
 
     public function uploadFiles(array $files)
@@ -45,7 +50,7 @@ trait UploadFiles
     }
 
     public function deleteFiles(array $files)
-    {
+    {        
         foreach ($files as $file) {
             $this->deleteFile($file);
         }
@@ -67,5 +72,10 @@ trait UploadFiles
             }
         }
         return $files;
+    }
+
+    protected function getFileUrl($fileName)
+    {
+        return Storage::url($this->relativeFilePath($fileName));
     }
 }
