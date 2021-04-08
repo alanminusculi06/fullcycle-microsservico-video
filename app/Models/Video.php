@@ -30,7 +30,7 @@ class Video extends Model
         'thumb_file',
         'banner_file',
         'video_file',
-        'thumb_file',
+        'trailer_file',
     ];
 
     protected $dates = ['deleted_at'];
@@ -43,7 +43,7 @@ class Video extends Model
     ];
 
     public $incrementing = false;
-    public static $fileFields = ['thumb_file', 'banner_file', 'video_file', 'thumb_file'];
+    public static $fileFields = ['thumb_file', 'banner_file', 'video_file', 'trailer_file'];
 
     public static function create(array $attributes = [])
     {       

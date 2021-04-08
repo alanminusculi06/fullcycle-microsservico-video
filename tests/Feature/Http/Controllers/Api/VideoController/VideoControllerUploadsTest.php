@@ -7,7 +7,6 @@ use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Tests\Stubs\Models\UploadFileStub;
 use Tests\Traits\TestUploads;
 use Tests\Traits\TestValidations;
 
@@ -80,13 +79,13 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 
         $newFiles = [
             'thumb_file' => UploadedFile::fake()->create('thumb_file.jpg'),
-            'video_file' => UploadFileStub::fake()->create('video_file.mp4')
+            'video_file' => UploadedFile::fake()->create('video_file.mp4')
         ];
         $response = $this->json('PUT', $this->routeUpdate(), $this->sendData + $newFiles);
         $response->assertStatus(200);
         $this->assertFilesOnPersist($response, Arr::except($files, ['thumb_file', 'video_file']));
 
-        $id = $response->json('id');
+        $id = $response->json('data.id');
         $video = Video::find($id);
         Storage::assertMissing($video->relativeFilePath($files['thumb_file']->hashName()));
         Storage::assertMissing($video->relativeFilePath($files['video_file']->hashName()));
@@ -94,7 +93,7 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 
     protected function assertFilesOnPersist(TestResponse $response, $files)
     {
-        $id = $response->json('id');
+        $id = $response->json('id') ?? $response->json('data.id');
         $video = Video::find($id);
         $this->assertFilesExistsInStorage($video, $files);
     }
