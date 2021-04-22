@@ -1,9 +1,8 @@
 /* eslint-disable no-nested-ternary */
 import React from 'react';
-import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import Link from '@material-ui/core/Link';
+import Link, { LinkProps } from '@material-ui/core/Link';
 import ListItem from '@material-ui/core/ListItem';
 import Collapse from '@material-ui/core/Collapse';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -13,8 +12,14 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import MuiBreadcrumbs from '@material-ui/core/Breadcrumbs';
 import { Route, MemoryRouter } from 'react-router';
 import { Link as RouterLink } from 'react-router-dom';
+import { Omit } from '@material-ui/types';
 
-const breadcrumbNameMap = {
+interface ListItemLinkProps extends LinkProps {
+  to: string;
+  open?: boolean;
+}
+
+const breadcrumbNameMap: { [key: string]: string } = {
   '/inbox': 'Inbox',
   '/inbox/important': 'Important',
   '/trash': 'Trash',
@@ -22,7 +27,7 @@ const breadcrumbNameMap = {
   '/drafts': 'Drafts',
 };
 
-function ListItemLink(props:ListItemLinkProps) {
+function ListItemLink(props: Omit<ListItemLinkProps, 'ref'>) {
   const { to, open, ...other } = props;
   const primary = breadcrumbNameMap[to];
 
@@ -36,27 +41,29 @@ function ListItemLink(props:ListItemLinkProps) {
   );
 }
 
-interface ListItemLinkProps {
-  open: PropTypes.bool,
-  to: PropTypes.string.isRequired,
-};
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: 360,
+    },
+    lists: {
+      backgroundColor: theme.palette.background.paper,
+      marginTop: theme.spacing(1),
+    },
+    nested: {
+      paddingLeft: theme.spacing(4),
+    },
+  }),
+);
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: 360,
-  },
-  lists: {
-    backgroundColor: theme.palette.background.paper,
-    marginTop: theme.spacing(1),
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-}));
+interface LinkRouterProps extends LinkProps {
+  to: string;
+  replace?: boolean;
+}
 
-const LinkRouter = (props:ListItemLinkProps) => <Link {...props} component={RouterLink} />;
+const LinkRouter = (props: LinkRouterProps) => <Link {...props} component={RouterLink as any} />;
 
 export default function Breadcrumbs() {
   const classes = useStyles();
