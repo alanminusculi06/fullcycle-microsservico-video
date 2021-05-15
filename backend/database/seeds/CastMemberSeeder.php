@@ -7,6 +7,8 @@ class CastMemberSeeder extends Seeder
 {
     public function run()
     {
-        factory(CastMember::class, 100)->create();
+        factory(CastMember::class, 100)->create([
+            'type' => rand(1, 2)
+        ]);
     }
 }
