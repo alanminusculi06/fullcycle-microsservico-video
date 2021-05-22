@@ -4,8 +4,13 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { Chip } from '@material-ui/core';
 import { parseISO, format } from 'date-fns';
-import httpVideo from '../../util/http';
+import categoryHttp from '../../util/http/category-http';
 
+interface Category {
+    id: string;
+    is_active: boolean;
+    name: string;
+}
 
 const columnsDefinition: MUIDataTableColumn[] = [
     {
@@ -34,12 +39,10 @@ const columnsDefinition: MUIDataTableColumn[] = [
 
 const Table = () => {
 
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<Category[]>([]);
 
     useEffect(() => {
-        httpVideo.get('categories').then(
-            response => setData(response.data.data)
-        )
+        categoryHttp.list<{ data: Category[] }>().then(({ data }) => setData(data.data));
     }, [])
 
     return (

@@ -4,10 +4,17 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { Chip } from '@material-ui/core';
 import { parseISO, format } from 'date-fns';
-import httpVideo from '../../util/http';
+import genreHttp from '../../util/http/genre-http';
 
 interface Category {
     name: string
+}
+
+interface Genre {
+    id: string;
+    is_active: boolean;
+    name: string;
+    categories: Category[]
 }
 
 const columnsDefinition: MUIDataTableColumn[] = [
@@ -38,7 +45,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
         label: 'Categorias',
         options: {
             customBodyRender(value: Category[], tableMeta, updateValue) {
-                return value.map(item=> {
+                return value.map(item => {
                     return item.name;
                 }).join(", ");
             }
@@ -48,12 +55,10 @@ const columnsDefinition: MUIDataTableColumn[] = [
 
 const Table = () => {
 
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<Genre[]>([]);
 
     useEffect(() => {
-        httpVideo.get('genres').then(
-            response => setData(response.data.data)
-        )
+        genreHttp.list<{ data: Genre[] }>().then(({ data }) => setData(data.data));
     }, [])
 
     return (

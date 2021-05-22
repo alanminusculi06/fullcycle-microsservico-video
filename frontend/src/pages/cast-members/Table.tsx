@@ -3,13 +3,19 @@ import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
-import httpVideo from '../../util/http';
+import castMemberHttp from '../../util/http/cast-member-http';
 
-const types: { [key: number] : string } = {
+interface CastMember {
+    id: string;
+    is_active: boolean;
+    name: string;
+    type: number;
+}
+
+const CastMemberTypeMap: { [key: number]: string } = {
     1: "Ator",
     2: "Diretor",
 }
-
 
 const columnsDefinition: MUIDataTableColumn[] = [
     {
@@ -21,7 +27,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
         label: 'Tipo',
         options: {
             customBodyRender(value, tableMeta, updateValue) {
-                return <span>{types[value]}</span>;
+                return <span>{CastMemberTypeMap[value]}</span>;
             }
         }
     },
@@ -38,12 +44,10 @@ const columnsDefinition: MUIDataTableColumn[] = [
 
 const Table = () => {
 
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<CastMember[]>([]);
 
     useEffect(() => {
-        httpVideo.get('cast-members').then(
-            response => setData(response.data.data)
-        )
+        castMemberHttp.list<{ data: CastMember[] }>().then(({ data }) => setData(data.data));
     }, [])
 
     return (

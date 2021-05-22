@@ -13,7 +13,7 @@ const PageList = () => {
                     title="Adicionar categoria"
                     size="small"
                     component={Link}
-                    to={"categories/create"}
+                    to={"categories/new"}
                 >
                     <AddIcon />
                 </Fab>

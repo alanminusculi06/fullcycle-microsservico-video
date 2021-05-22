@@ -3,6 +3,7 @@ import Dashboard from "../pages/Dashboard";
 import CategoriesPageList from "../pages/category/PageList";
 import GenresPageList from "../pages/genre/PageList";
 import CastMembersPageList from "../pages/cast-members/PageList";
+import CategoryPageForm from "../pages/category/PageForm";
 
 
 export interface MyRouteProps extends RouteProps {
@@ -25,13 +26,13 @@ const routes: MyRouteProps[] = [
         component: CategoriesPageList,
         exact: true
     },
-    // {
-    //     name: 'categories.create',
-    //     label: 'Criar categoria',
-    //     path: '/categories/new',
-    //     component: CategoriesPageList,
-    //     exact: true
-    // },
+    {
+        name: 'categories.create',
+        label: 'Criar categoria',
+        path: '/categories/new',
+        component: CategoryPageForm,
+        exact: true
+    },
     {
         name: 'genres.list',
         label: 'Listar gêneros',
