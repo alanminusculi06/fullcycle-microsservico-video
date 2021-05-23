@@ -13,7 +13,7 @@ const PageList = () => {
                     title="Adicionar gênero"
                     size="small"
                     component={Link}
-                    to={"genres/create"}
+                    to={"genres/new"}
                 >
                     <AddIcon />
                 </Fab>

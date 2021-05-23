@@ -4,6 +4,8 @@ import CategoriesPageList from "../pages/category/PageList";
 import GenresPageList from "../pages/genre/PageList";
 import CastMembersPageList from "../pages/cast-members/PageList";
 import CategoryPageForm from "../pages/category/PageForm";
+import CastMemberPageForm from "../pages/cast-members/PageForm";
+import GenrePageForm from "../pages/genre/PageForm";
 
 
 export interface MyRouteProps extends RouteProps {
@@ -40,13 +42,13 @@ const routes: MyRouteProps[] = [
         component: GenresPageList,
         exact: true
     },
-    // {
-    //     name: 'genres.create',
-    //     label: 'Criar gênero',
-    //     path: '/genres/new',
-    //     component: GenresPageList,
-    //     exact: true
-    // },
+    {
+        name: 'genres.create',
+        label: 'Criar gênero',
+        path: '/genres/new',
+        component: GenrePageForm,
+        exact: true
+    },
     {
         name: 'cast-members.list',
         label: 'Listar pessoas',
@@ -54,13 +56,13 @@ const routes: MyRouteProps[] = [
         component: CastMembersPageList,
         exact: true
     },
-    // {
-    //     name: 'cast-members.create',
-    //     label: 'Criar gênero',
-    //     path: '/genres/new',
-    //     component: CastMembersPageList,
-    //     exact: true
-    // },
+    {
+        name: 'cast-members.create',
+        label: 'Criar pessoa',
+        path: '/cast-members/new',
+        component: CastMemberPageForm,
+        exact: true
+    },
 ];
 
 export default routes;
