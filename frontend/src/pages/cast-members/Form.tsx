@@ -18,7 +18,7 @@ export const Form = () => {
 
     const buttonProps: ButtonProps = {
         className: classes.submit,
-        variant: "outlined",
+        variant: 'contained',
     };
 
     const { register, handleSubmit, getValues, setValue } = useForm();
@@ -44,17 +44,18 @@ export const Form = () => {
             <FormControl margin="normal">
                 <FormLabel component="legend">Tipo</FormLabel>
                 <RadioGroup
+                    
                     name="type"
                     onChange={(e) => {
                         setValue('type', parseInt(e.target.value));
                     }}>
-                    <FormControlLabel value="1" control={<Radio />} label="Ator" />
-                    <FormControlLabel value="2" control={<Radio />} label="Diretor" />
+                    <FormControlLabel value="1" control={<Radio color='primary'/>} label="Ator" />
+                    <FormControlLabel value="2" control={<Radio color='primary'/>} label="Diretor" />
                 </RadioGroup>
             </FormControl>
 
             <Box dir={"rtl"}>
-                <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
+                <Button {...buttonProps} color='primary' onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
                 <Button {...buttonProps} type="submit">Salvar e continuar editando</Button>
             </Box>
         </form>

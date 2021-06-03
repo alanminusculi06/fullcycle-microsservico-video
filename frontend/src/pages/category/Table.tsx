@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Chip } from '@material-ui/core';
 import { parseISO, format } from 'date-fns';
 import categoryHttp from '../../util/http/category-http';
+import { BadgeNo, BadgeYes } from '../../components/Badege';
 
 interface Category {
     id: string;
@@ -18,7 +19,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
         label: 'Ativo',
         options: {
             customBodyRender(value, tableMeta, updateValue) {
-                return value ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
+                return value ? <BadgeYes /> : <BadgeNo />;
             }
         }
     },

@@ -8,8 +8,9 @@ import Table from './Table';
 const PageList = () => {
     return (
         <Page title="Categorias">
-            <Box dir={'rtl'}>
+            <Box dir={'rtl'} paddingBottom={2}>
                 <Fab
+                    color="secondary"
                     title="Adicionar categoria"
                     size="small"
                     component={Link}

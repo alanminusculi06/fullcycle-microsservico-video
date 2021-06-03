@@ -23,7 +23,7 @@ const routes: MyRouteProps[] = [
     },
     {
         name: 'categories.list',
-        label: 'Listar categorias',
+        label: 'Categorias',
         path: '/categories',
         component: CategoriesPageList,
         exact: true
@@ -37,7 +37,7 @@ const routes: MyRouteProps[] = [
     },
     {
         name: 'genres.list',
-        label: 'Listar gêneros',
+        label: 'Gêneros',
         path: '/genres',
         component: GenresPageList,
         exact: true
@@ -51,7 +51,7 @@ const routes: MyRouteProps[] = [
     },
     {
         name: 'cast-members.list',
-        label: 'Listar pessoas',
+        label: 'Pessoas',
         path: '/cast-members',
         component: CastMembersPageList,
         exact: true
