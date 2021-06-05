@@ -1,8 +1,6 @@
 import * as React from 'react';
 import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { Chip } from '@material-ui/core';
+import { useState, useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
 import genreHttp from '../../util/http/genre-http';
 import { BadgeNo, BadgeYes } from '../../components/Badege';
