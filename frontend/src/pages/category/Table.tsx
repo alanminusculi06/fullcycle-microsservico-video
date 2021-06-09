@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
 import categoryHttp from '../../util/http/category-http';
-import { BadgeNo, BadgeYes } from '../../components/Badege';
+import { BadgeNo, BadgeYes } from '../../components/Badge';
+import { Link } from 'react-router-dom';
 
 interface Category {
     id: string;
@@ -13,6 +14,13 @@ interface Category {
 }
 
 const columnsDefinition: MUIDataTableColumn[] = [
+    {
+        name: 'id',
+        label: 'id',
+        options: {
+            display: false
+        }
+    },
     {
         name: 'is_active',
         label: 'Ativo',
@@ -25,6 +33,11 @@ const columnsDefinition: MUIDataTableColumn[] = [
     {
         name: 'name',
         label: 'Nome',
+        options: {
+            customBodyRender(value, tableMeta, updateValue) {
+                return <Link to={`/categories/${tableMeta.rowData[0]}/edit`}>{value}</Link>;
+            }
+        }
     },
     {
         name: 'created_at',
@@ -33,7 +46,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
             customBodyRender(value, tableMeta, updateValue) {
                 return <span>{format(parseISO(value), 'dd/MM/yyyy HH:mm')}</span>;
             }
-        }
+        },
     },
 ]
 

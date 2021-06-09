@@ -3,7 +3,7 @@ import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables';
 import { useState, useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
 import genreHttp from '../../util/http/genre-http';
-import { BadgeNo, BadgeYes } from '../../components/Badege';
+import { BadgeNo, BadgeYes } from '../../components/Badge';
 
 interface Category {
     name: string

@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
+import * as yup from '../../../src/util/vendor/yup';
 import { Box, Button, ButtonProps, Checkbox, FormControlLabel, makeStyles, TextField, Theme } from '@material-ui/core';
 import categoryHttp from '../../util/http/category-http';
 import useForm from 'react-hook-form';
-import * as yup from '../../../src/util/vendor/yup';
 import { useHistory, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
@@ -21,17 +22,23 @@ const validationSchema = yup.object().shape({
 
 export const Form = () => {
 
-    const classes = useStyles();
-
-    const { register, handleSubmit, getValues, errors, reset, watch, setValue } = useForm({
+    const {
+        register,
+        handleSubmit,
+        getValues,
+        reset,
+        setValue,
+        errors,
+    } = useForm({
         validationSchema
     });
 
+    const classes = useStyles();
     const history = useHistory();
-    const { id } = useParams<{ id: string }>();
-    const [category, setCategory] = useState(null);
-    const [loading, setLoading] = useState<boolean>(false);
     const snackbar = useSnackbar();
+    const { id } = useParams<{ id: string }>();
+    const [loading, setLoading] = useState<boolean>(false);
+    const [ativo, setAtivo] = useState<boolean>(true);
 
     const buttonProps: ButtonProps = {
         className: classes.submit,
@@ -40,29 +47,35 @@ export const Form = () => {
     };
 
     useEffect(() => {
-        register({ name: 'is_active' })
-    }, [register]);
+        if (!id) return;
 
-    useEffect(() => {
-        if (!id) {
-            return;
+        async function getCategory() {
+            setLoading(true);
+            try {
+                const { data } = await categoryHttp.get(id);
+                reset(data.data);
+            } catch (error) {
+                console.log(error);
+                snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
+            } finally {
+                setLoading(false);
+            }
         }
-        setLoading(true);
-        categoryHttp.get(id).then(response => {
-            setCategory(response.data.data);
-            reset(response.data.data)
-        }).finally(() => setLoading(false))
+
+        getCategory();
     }, [])
 
-    function onSubmit(formData, event) {
+    async function onSubmit(formData, event) {
         setLoading(true);
+        try {
+            const http = !id
+                ? categoryHttp.create(formData)
+                : categoryHttp.update(id, formData);
 
-        const http = !id
-            ? categoryHttp.create(formData)
-            : categoryHttp.update(id, formData);
+            const { data } = await http;
 
-        http.then(({ data }) => {
             snackbar.enqueueSnackbar('Categoria salva com sucesso.', { variant: 'success' });
+
             setTimeout(() => {
                 event
                     ? (id
@@ -70,11 +83,19 @@ export const Form = () => {
                         : history.push(`/categories/${data.data.id}/edit`))
                     : history.push('/categories');
             });
-        })
-            .catch((error) => {
-                snackbar.enqueueSnackbar('Nào foi possível salvar a categoria.', { variant: 'error' });
-            })
-            .finally(() => setLoading(false));
+        } catch (error) {
+            console.log(error);
+            snackbar.enqueueSnackbar('Não foi possível salvar a categoria.', { variant: 'error' });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function onAtivoChanged(event) {
+        console.log(event);
+        setAtivo(event.target.checked);
+        setValue('is_active', ativo);
+        console.log(ativo);
     }
 
     return (
@@ -85,8 +106,9 @@ export const Form = () => {
                     <Checkbox
                         color='primary'
                         name="is_active"
-                        checked={watch('is_active')}
-                        onChange={() => setValue('is_active', !getValues()['is_active'])} />}
+                        ref={register}
+                        checked={ativo}
+                        onChange={onAtivoChanged} />}
                 label='Ativo'
                 labelPlacement='end' />
 
