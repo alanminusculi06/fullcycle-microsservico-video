@@ -1,20 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
 import * as yup from '../../../src/util/vendor/yup';
-import { Box, Button, ButtonProps, Checkbox, FormControlLabel, makeStyles, TextField, Theme } from '@material-ui/core';
+import { Checkbox, FormControlLabel, TextField } from '@material-ui/core';
 import categoryHttp from '../../util/http/category-http';
 import useForm from 'react-hook-form';
 import { useHistory, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
-
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        submit: {
-            margin: theme.spacing()
-        }
-    }
-});
+import SubmitActions from '../../components/SubmitActions';
+import DefaultForm from '../../components/DefaultForm';
 
 const validationSchema = yup.object().shape({
     name: yup.string().label("Nome").required().max(255),
@@ -28,41 +22,38 @@ export const Form = () => {
         getValues,
         reset,
         setValue,
+        triggerValidation,
         errors,
     } = useForm({
         validationSchema
     });
 
-    const classes = useStyles();
     const history = useHistory();
     const snackbar = useSnackbar();
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState<boolean>(false);
     const [ativo, setAtivo] = useState<boolean>(true);
 
-    const buttonProps: ButtonProps = {
-        className: classes.submit,
-        variant: 'contained',
-        disabled: loading
-    };
-
     useEffect(() => {
-        if (!id) return;
+        let isSubscribed = true;
 
-        async function getCategory() {
+        (async () => {
+            if (!id) return;
             setLoading(true);
             try {
                 const { data } = await categoryHttp.get(id);
-                reset(data.data);
+                if (isSubscribed) reset(data.data);
             } catch (error) {
                 console.log(error);
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
             } finally {
                 setLoading(false);
             }
-        }
+        })();
 
-        getCategory();
+        return () => {
+            isSubscribed = false;
+        }
     }, [])
 
     async function onSubmit(formData, event) {
@@ -99,7 +90,7 @@ export const Form = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <DefaultForm GridItemProps={{ xs: 12, md: 6 }} onSubmit={handleSubmit(onSubmit)}>
             <FormControlLabel
                 disabled={loading}
                 control={
@@ -137,10 +128,16 @@ export const Form = () => {
                 inputRef={register}
             />
 
-            <Box dir={"rtl"}>
-                <Button {...buttonProps} color='primary' onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
-                <Button {...buttonProps} type="submit">Salvar e continuar editando</Button>
-            </Box>
-        </form>
+            <SubmitActions
+                disableButtons={loading}
+                handleSave={
+                    () =>
+                        triggerValidation()
+                            .then(isValid => {
+                                isValid && onSubmit(getValues(), null)
+                            })
+                }
+            />
+        </DefaultForm>
     )
 }

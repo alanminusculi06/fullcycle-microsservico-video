@@ -4,13 +4,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
 import castMemberHttp from '../../util/http/cast-member-http';
-
-interface CastMember {
-    id: string;
-    is_active: boolean;
-    name: string;
-    type: number;
-}
+import { CastMember, ListResponse } from '../../util/models';
 
 const CastMemberTypeMap: { [key: number]: string } = {
     1: "Ator",
@@ -47,7 +41,16 @@ const Table = () => {
     const [data, setData] = useState<CastMember[]>([]);
 
     useEffect(() => {
-        castMemberHttp.list<{ data: CastMember[] }>().then(({ data }) => setData(data.data));
+        let isSubscribed = true;
+        (async () => {
+            const { data } = await castMemberHttp.list<ListResponse<CastMember>>();
+            if (isSubscribed)
+                setData(data.data);
+        })();
+
+        return () => {
+            isSubscribed = false;
+        }
     }, [])
 
     return (
@@ -56,7 +59,6 @@ const Table = () => {
             columns={columnsDefinition}
             data={data}
         >
-
         </MUIDataTable>
     )
 };

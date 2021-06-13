@@ -4,17 +4,7 @@ import { useState, useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
 import genreHttp from '../../util/http/genre-http';
 import { BadgeNo, BadgeYes } from '../../components/Badge';
-
-interface Category {
-    name: string
-}
-
-interface Genre {
-    id: string;
-    is_active: boolean;
-    name: string;
-    categories: Category[]
-}
+import { Category, Genre, ListResponse } from '../../util/models';
 
 const columnsDefinition: MUIDataTableColumn[] = [
     {
@@ -57,7 +47,16 @@ const Table = () => {
     const [data, setData] = useState<Genre[]>([]);
 
     useEffect(() => {
-        genreHttp.list<{ data: Genre[] }>().then(({ data }) => setData(data.data));
+        let isSubscribed = true;
+        (async () => {
+            const { data } = await genreHttp.list<ListResponse<Genre>>();
+            if (isSubscribed)
+                setData(data.data);
+        })();
+
+        return () => {
+            isSubscribed = false;
+        }
     }, [])
 
     return (
@@ -66,7 +65,6 @@ const Table = () => {
             columns={columnsDefinition}
             data={data}
         >
-
         </MUIDataTable>
     )
 };

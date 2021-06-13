@@ -1,21 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
 import * as yup from '../../../src/util/vendor/yup';
-import { Box, Button, ButtonProps, FormControl, FormControlLabel, FormHelperText, FormLabel, makeStyles, Radio, RadioGroup, TextField, Theme } from '@material-ui/core';
+import { FormControl, FormControlLabel, FormHelperText, FormLabel, Radio, RadioGroup, TextField } from '@material-ui/core';
 import { useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import useForm from 'react-hook-form';
 import castMemberHttp from '../../util/http/cast-member-http';
-
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        submit: {
-            margin: theme.spacing()
-        }
-    }
-});
+import SubmitActions from '../../components/SubmitActions';
+import DefaultForm from '../../components/DefaultForm';
 
 const validationSchema = yup.object().shape({
     name: yup.string().label('Nome').required().max(255),
@@ -31,44 +25,41 @@ export const Form = () => {
         setValue,
         reset,
         watch,
+        triggerValidation,
         errors
     } = useForm({
         validationSchema
     });
 
-    const classes = useStyles();
     const history = useHistory();
     const snackbar = useSnackbar();
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState<boolean>(false);
-
-    const buttonProps: ButtonProps = {
-        className: classes.submit,
-        variant: 'contained',
-        disabled: loading
-    };
 
     useEffect(() => {
         register({ name: "type" })
     }, [register]);
 
     useEffect(() => {
-        if (!id) return;
+        let isSubscribed = true;
 
-        async function getCastMember() {
+        (async () => {
+            if (!id) return;
             setLoading(true);
             try {
                 const { data } = await castMemberHttp.get(id);
-                reset(data.data);
+                if (isSubscribed) reset(data.data);
             } catch (error) {
-                console.log(error);
+                console.error(error);
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
             } finally {
                 setLoading(false);
             }
-        }
+        })();
 
-        getCastMember();
+        return () => {
+            isSubscribed = false;
+        }
     }, [])
 
     async function onSubmit(formData, event) {
@@ -98,7 +89,7 @@ export const Form = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <DefaultForm GridItemProps={{ xs: 12, md: 6 }} onSubmit={handleSubmit(onSubmit)}>
             <TextField
                 disabled={loading}
                 name="name"
@@ -133,10 +124,16 @@ export const Form = () => {
                 }
             </FormControl>
 
-            <Box dir={"rtl"}>
-                <Button {...buttonProps} color='primary' onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
-                <Button {...buttonProps} type="submit">Salvar e continuar editando</Button>
-            </Box>
-        </form>
+            <SubmitActions
+                disableButtons={loading}
+                handleSave={
+                    () =>
+                        triggerValidation()
+                            .then(isValid => {
+                                isValid && onSubmit(getValues(), null)
+                            })
+                }
+            />
+        </DefaultForm>
     )
 }
