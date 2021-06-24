@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use ReflectionClass;
+use EloquentFilter\Filterable;
 
 abstract class BasicCrudController extends Controller
 {
@@ -16,9 +18,21 @@ abstract class BasicCrudController extends Controller
     protected abstract function resource();
     protected abstract function resourceCollection();
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = !$this->paginationSize ? $this->model()::all() : $this->model()::paginate($this->paginationSize);
+        $perPage = (int) $request->get('per_page', $this->paginationSize);
+        $hasFilter = in_array(Filterable::class, class_uses($this->model()));
+
+        $query = $this->queryBuilder();
+
+        if ($hasFilter) {
+            $query = $query->filter($request->all());
+        }
+
+        $data = $request->has('all') || !$this->paginationSize
+            ? $query->get()
+            : $query->paginate($perPage);
+
         $resourceCollection = $this->resourceCollection();
         $refClass = new ReflectionClass($this->resourceCollection());
         return $refClass->isSubclassOf(ResourceCollection::class)
@@ -63,5 +77,10 @@ abstract class BasicCrudController extends Controller
         $obj = $this->findOrFail($id);
         $obj->delete();
         return response()->noContent();
+    }
+
+    protected function queryBuilder(): Builder
+    {
+        return $this->model()::query();
     }
 }
