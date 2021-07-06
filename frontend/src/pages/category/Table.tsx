@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
 import { BadgeNo, BadgeYes } from '../../components/Badge';
@@ -67,40 +67,137 @@ const columnsDefinition: TableColumn[] = [
     }
 ]
 
+interface Pagination {
+    page: number;
+    total: number;
+    perPage: number;
+}
+
+interface Order {
+    sort: string | null;
+    dir: string | null;
+}
+
+interface SearchState {
+    search: string;
+    pagination: Pagination;
+    order: Order;
+}
+
 const Table = () => {
 
     const snackbar = useSnackbar();
+    const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [searchState, setSearchState] = useState<SearchState>({
+        search: '',
+        pagination: {
+            page: 1,
+            total: 0,
+            perPage: 15
+        },
+        order: {
+            sort: null,
+            dir: null
+        }
+    });
+
+    const columns = columnsDefinition.map(column => {
+        if (column.name === searchState.order.sort) {
+            let options = column.options as any;
+            if (options != null) {
+                options.sortDirection = searchState.order.dir
+            }
+        }
+        return column;
+    })
 
     useEffect(() => {
-        let isSubscribed = true;
-        (async () => {
-            setLoading(true);
-            try {
-                const { data } = await categoryHttp.list<ListResponse<Category>>();
-                if (isSubscribed)
-                    setData(data.data);
-            } catch (error) {
-                console.log(error);
-                snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
-            } finally {
-                setLoading(false);
-            }
-        })();
-
+        subscribed.current = true;
+        getData();
         return () => {
-            isSubscribed = false;
+            subscribed.current = false;
         }
-    }, [])
+    }, [
+        searchState.search,
+        searchState.pagination.page,
+        searchState.pagination.perPage,
+        searchState.order
+    ]);
+
+    async function getData() {
+        setLoading(true);
+        try {
+            const { data } = await categoryHttp.list<ListResponse<Category>>({
+                queryParams: {
+                    search: searchState.search,
+                    page: searchState.pagination.page,
+                    per_page: searchState.pagination.perPage,
+                    sort: searchState.order.sort,
+                    dir: searchState.order.dir
+                }
+            });
+            if (subscribed.current) {
+                setData(data.data);
+                setSearchState((prevState => ({
+                    ...prevState,
+                    pagination: {
+                        ...prevState.pagination,
+                        total: data.meta.total
+                    }
+                })));
+            }
+        } catch (error) {
+            console.log(error);
+            if (!categoryHttp.isCancelledRequest(error)) {
+                snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>
             <MyTable
                 title="Listagem de categorias"
-                columns={columnsDefinition}
+                columns={columns}
                 data={data}
                 loading={loading}
+                options={{
+                    serverSide: true,
+                    responsive: 'standard',
+                    searchText: searchState.search,
+                    page: searchState.pagination.page - 1,
+                    rowsPerPage: searchState.pagination.perPage,
+                    count: searchState.pagination.total,
+                    onSearchChange: (value) => setSearchState((prevState => ({
+                        ...prevState,
+                        search: value as string
+                    }))),
+                    onChangePage: (page) => setSearchState((prevState => ({
+                        ...prevState,
+                        pagination: {
+                            ...prevState.pagination,
+                            page: page + 1
+                        }
+                    }))),
+                    onChangeRowsPerPage: (perPage) => setSearchState((prevState => ({
+                        ...prevState,
+                        pagination: {
+                            ...prevState.pagination,
+                            perPage: perPage
+                        }
+                    }))),
+                    onColumnSortChange: (changedColumn, direction) => setSearchState((prevState => ({
+                        ...prevState,
+                        order: {
+                            sort: changedColumn,
+                            dir: direction.includes('desc') ? 'desc' : 'asc'
+                        }
+                    }))),
+                }}
             />
         </MuiThemeProvider>
     )
