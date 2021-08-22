@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import { useEffect } from 'react';
 import { parseISO, format } from 'date-fns';
 import { BadgeNo, BadgeYes } from '../../components/Badge';
@@ -8,10 +8,12 @@ import { Link } from 'react-router-dom';
 import { Category, ListResponse } from '../../util/models';
 import { useSnackbar } from 'notistack';
 import { IconButton, MuiThemeProvider } from '@material-ui/core';
-import MyTable, { makeActionStyles, TableColumn } from '../../components/Table';
+import DefaultTable, { makeActionStyles, MuiDataTableRefComponent, TableColumn } from '../../components/Table';
 import EditIcon from '@material-ui/icons/Edit';
 import categoryHttp from '../../util/http/category-http';
 import { FilterResetButton } from '../../components/Table/FilterResetButton';
+import LoadingContext from '../../components/Loading/LoadingContext';
+import useFilter from '../../hooks/useFilter';
 
 
 const columnsDefinition: TableColumn[] = [
@@ -68,53 +70,34 @@ const columnsDefinition: TableColumn[] = [
     }
 ]
 
-interface Pagination {
-    page: number;
-    total: number;
-    perPage: number;
-}
-
-interface Order {
-    sort: string | null;
-    dir: string | null;
-}
-
-interface SearchState {
-    search: string;
-    pagination: Pagination;
-    order: Order;
-}
+const debounceTime = 300;
+const debouncedSearchTime = 300;
+const rowsPerPage = 15;
+const rowsPerPageOptions = [15, 25, 50];
 
 const Table = () => {
-
-    const initialState = {
-        search: '',
-        pagination: {
-            page: 1,
-            total: 0,
-            perPage: 15
-        },
-        order: {
-            sort: null,
-            dir: null
-        }
-    };
 
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<Category[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [searchState, setSearchState] = useState<SearchState>(initialState);
+    const loading = useContext(LoadingContext);
+    const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
 
-    const columns = columnsDefinition.map(column => {
-        if (column.name === searchState.order.sort) {
-            let options = column.options as any;
-            if (options != null) {
-                options.sortDirection = searchState.order.dir
-            }
-        }
-        return column;
-    })
+    const {
+        columns,
+        filterManager,
+        cleanSearchText,
+        filterState,
+        debouncedFilterState,
+        totalRecords,
+        setTotalRecords,
+    } = useFilter({
+        columns: columnsDefinition,
+        debounceTime: debounceTime,
+        rowsPerPage,
+        rowsPerPageOptions,
+        tableRef
+    });
 
     useEffect(() => {
         subscribed.current = true;
@@ -123,94 +106,70 @@ const Table = () => {
             subscribed.current = false;
         }
     }, [
-        searchState.search,
-        searchState.pagination.page,
-        searchState.pagination.perPage,
-        searchState.order
+        cleanSearchText(debouncedFilterState.search),
+        debouncedFilterState.pagination.page,
+        debouncedFilterState.pagination.per_page,
+        debouncedFilterState.order
     ]);
 
     async function getData() {
-        setLoading(true);
         try {
             const { data } = await categoryHttp.list<ListResponse<Category>>({
                 queryParams: {
-                    search: searchState.search,
-                    page: searchState.pagination.page,
-                    per_page: searchState.pagination.perPage,
-                    sort: searchState.order.sort,
-                    dir: searchState.order.dir
+                    search: cleanSearchText(debouncedFilterState.search),
+                    page: debouncedFilterState.pagination.page,
+                    per_page: debouncedFilterState.pagination.per_page,
+                    sort: debouncedFilterState.order.sort,
+                    dir: debouncedFilterState.order.dir,
                 }
             });
             if (subscribed.current) {
                 setData(data.data);
-                setSearchState((prevState => ({
-                    ...prevState,
-                    pagination: {
-                        ...prevState.pagination,
-                        total: data.meta.total
-                    }
-                })));
+                setTotalRecords(data.meta.total);
             }
         } catch (error) {
-            console.log(error);
-            if (!categoryHttp.isCancelledRequest(error)) {
-                snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
+            console.error(error);
+            if (categoryHttp.isCancelledRequest(error)) {
+                return;
             }
-        } finally {
-            setLoading(false);
+            snackbar.enqueueSnackbar(
+                'Não foi possível carregar as informações',
+                { variant: 'error', }
+            )
         }
     }
 
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>
-            <MyTable
-                title="Listagem de categorias"
+            <DefaultTable
+                title=""
                 columns={columns}
                 data={data}
                 loading={loading}
+                debouncedSearchTime={debouncedSearchTime}
+                ref={tableRef}
                 options={{
                     serverSide: true,
-                    responsive: 'standard',
-                    searchText: searchState.search,
-                    page: searchState.pagination.page - 1,
-                    rowsPerPage: searchState.pagination.perPage,
-                    count: searchState.pagination.total,
+                    responsive: "vertical",
+                    searchText: filterState.search as any,
+                    page: filterState.pagination.page - 1,
+                    rowsPerPage: filterState.pagination.per_page,
+                    rowsPerPageOptions,
+                    count: totalRecords,
                     customToolbar: () => (
-                        <FilterResetButton handleClick={() => setSearchState(initialState)} />
+                        <FilterResetButton
+                            handleClick={() => filterManager.resetFilter()}
+                        />
                     ),
-                    onSearchChange: (value) => setSearchState((prevState => ({
-                        ...prevState,
-                        search: value as string,
-                        pagination: {
-                            ...prevState.pagination,
-                            page: 1
-                        }
-                    }))),
-                    onChangePage: (page) => setSearchState((prevState => ({
-                        ...prevState,
-                        pagination: {
-                            ...prevState.pagination,
-                            page: page + 1
-                        }
-                    }))),
-                    onChangeRowsPerPage: (perPage) => setSearchState((prevState => ({
-                        ...prevState,
-                        pagination: {
-                            ...prevState.pagination,
-                            perPage: perPage
-                        }
-                    }))),
-                    onColumnSortChange: (changedColumn, direction) => setSearchState((prevState => ({
-                        ...prevState,
-                        order: {
-                            sort: changedColumn,
-                            dir: direction.includes('desc') ? 'desc' : 'asc'
-                        }
-                    }))),
+                    onSearchChange: (value) => filterManager.changeSearch(value),
+                    onChangePage: (page) => filterManager.changePage(page),
+                    onChangeRowsPerPage: (perPage) => filterManager.changeRowsPerPage(perPage),
+                    onColumnSortChange: (changedColumn: string, direction: string) =>
+                        filterManager.changeColumnSort(changedColumn, direction)
                 }}
             />
         </MuiThemeProvider>
-    )
+    );
 };
 
 export default Table;
