@@ -8,10 +8,10 @@ import { Link } from 'react-router-dom';
 import { Category, ListResponse } from '../../util/models';
 import { useSnackbar } from 'notistack';
 import { IconButton, MuiThemeProvider } from '@material-ui/core';
+import { FilterResetButton } from '../../components/Table/FilterResetButton';
 import DefaultTable, { makeActionStyles, MuiDataTableRefComponent, TableColumn } from '../../components/Table';
 import EditIcon from '@material-ui/icons/Edit';
 import categoryHttp from '../../util/http/category-http';
-import { FilterResetButton } from '../../components/Table/FilterResetButton';
 import LoadingContext from '../../components/Loading/LoadingContext';
 import useFilter from '../../hooks/useFilter';
 
@@ -21,40 +21,49 @@ const columnsDefinition: TableColumn[] = [
         name: 'id',
         label: 'id',
         options: {
-            display: false
+            display: false,
+            filter: false,
         },
-        width: '0%'
+        width: '5%'
     },
     {
         name: 'is_active',
         label: 'Ativo',
         options: {
+            filterOptions: {
+                names: ['Sim', 'Não'],
+            },
             customBodyRender(value, tableMeta, updateValue) {
                 return value ? <BadgeYes /> : <BadgeNo />;
             }
         },
-        width: '0%'
+        width: '70%'
     },
     {
         name: 'name',
         label: 'Nome',
-        width: '80%'
+        width: '60%',
+        options: {
+            filter: false,
+        },
     },
     {
         name: 'created_at',
         label: 'Criado em',
         options: {
+            filter: false,
             customBodyRender(value, tableMeta, updateValue) {
                 return <span>{format(parseISO(value), 'dd/MM/yyyy HH:mm')}</span>;
             }
         },
-        width: '20%'
+        width: '20%',
     },
     {
         name: "actions",
         label: "Ações",
-        width: '13%',
+        width: '10%',
         options: {
+            filter: false,
             sort: false,
             customBodyRender(value, tableMeta) {
                 return (
@@ -164,8 +173,7 @@ const Table = () => {
                     onSearchChange: (value) => filterManager.changeSearch(value),
                     onChangePage: (page) => filterManager.changePage(page),
                     onChangeRowsPerPage: (perPage) => filterManager.changeRowsPerPage(perPage),
-                    onColumnSortChange: (changedColumn: string, direction: string) =>
-                        filterManager.changeColumnSort(changedColumn, direction)
+                    onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction)
                 }}
             />
         </MuiThemeProvider>
