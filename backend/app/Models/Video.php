@@ -39,18 +39,23 @@ class Video extends Model
         'id' => 'string',
         'opened' => 'boolean',
         'year_launched' => 'integer',
-        'duration' => 'integer'
+        'duration' => 'integer',
     ];
 
     public $incrementing = false;
-    public static $fileFields = ['thumb_file', 'banner_file', 'video_file', 'trailer_file'];
+    public static $fileFields = [
+        'thumb_file',
+        'banner_file',
+        'video_file',
+        'trailer_file',
+    ];
 
     public static function create(array $attributes = [])
-    {       
+    {
         $files = self::extractFiles($attributes);
         try {
             DB::beginTransaction();
-            $obj = static::query()->create($attributes);            
+            $obj = static::query()->create($attributes);
             static::handleRelations($obj, $attributes);
             $obj->uploadFiles($files);
             DB::commit();
@@ -94,6 +99,9 @@ class Video extends Model
         if (isset($attributes['genres_id'])) {
             $video->genres()->sync($attributes['genres_id']);
         }
+        if (isset($attributes['cast_members_id'])) {
+            $video->castMembers()->sync($attributes['cast_members_id']);
+        }
     }
 
     public function categories()
@@ -104,6 +112,11 @@ class Video extends Model
     public function genres()
     {
         return $this->belongsToMany(Genre::class)->withTrashed();
+    }
+
+    public function castMembers()
+    {
+        return $this->belongsToMany(CastMember::class)->withTrashed();
     }
 
     protected function uploadDir()
@@ -118,12 +131,16 @@ class Video extends Model
 
     public function getBannerFileUrlAttribute()
     {
-        return $this->banner_file ? $this->getFileUrl($this->banner_file) : null;
+        return $this->banner_file
+            ? $this->getFileUrl($this->banner_file)
+            : null;
     }
 
     public function getTrailerFileUrlAttribute()
     {
-        return $this->trailer_file ? $this->getFileUrl($this->trailer_file) : null;
+        return $this->trailer_file
+            ? $this->getFileUrl($this->trailer_file)
+            : null;
     }
 
     public function getVideoFileUrlAttribute()

@@ -4,7 +4,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import routes, { MyRouteProps } from '../../routes';
 import { Link } from 'react-router-dom';
 
-const listRoutes = ['dashboard', 'categories.list', 'genres.list', 'cast-members.list',];
+const listRoutes = ['dashboard', 'categories.list', 'genres.list', 'cast-members.list', 'videos.list'];
+
 const menuRoutes = routes.filter(route => listRoutes.includes(route.name));
 
 export const Menu: React.FC = () => {

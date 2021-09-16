@@ -6,6 +6,8 @@ import CastMembersPageList from "../pages/cast-members/PageList";
 import CategoryPageForm from "../pages/category/PageForm";
 import CastMemberPageForm from "../pages/cast-members/PageForm";
 import GenrePageForm from "../pages/genre/PageForm";
+import VideoList from "../pages/video/PageList";
+import VideoForm from "../pages/video/PageForm";
 
 
 export interface MyRouteProps extends RouteProps {
@@ -83,7 +85,31 @@ const routes: MyRouteProps[] = [
         path: '/cast-members/:id/edit',
         component: CastMemberPageForm,
         exact: true
-    }
+    },
+    {
+        name: 'videos.list',
+        label: 'Vídeos',
+        path: '/videos',
+        component: VideoList,
+        exact: true,
+        //auth: true
+    },
+    {
+        name: 'videos.create',
+        label: 'Criar vídeos',
+        path: '/videos/create',
+        component: VideoForm,
+        exact: true,
+        //auth: true
+    },
+    {
+        name: 'videos.edit',
+        label: 'Editar vídeo',
+        path: '/videos/:id/edit',
+        component: VideoForm,
+        exact: true,
+        //auth: true
+    },
 ];
 
 export default routes;

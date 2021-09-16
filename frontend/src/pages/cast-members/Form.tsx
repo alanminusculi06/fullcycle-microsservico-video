@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
-import useForm from 'react-hook-form';
+import { useForm } from "react-hook-form";
 import castMemberHttp from '../../util/http/cast-member-http';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';

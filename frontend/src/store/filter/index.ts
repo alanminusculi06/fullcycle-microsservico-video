@@ -103,7 +103,10 @@ function updateExtraFilter(state = INITIAL_STATE, action: UpdateExtraFilterActio
         ...state,
         extraFilter: {
             ...state.extraFilter,
-            ...action.payload
+            ...action.payload // {type: 'Diretor'}
         }
     }
 }
+//historicos dos estados conforme o usuário vai mexendo na aplicação
+//log, debug, outras tarefas, assincrono, erros - middlewares - Redux Thunk ou Redux Saga
+//separar os motivos da mudanças de como elas são feitas

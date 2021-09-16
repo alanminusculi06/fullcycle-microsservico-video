@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as yup from '../../../src/util/vendor/yup';
 import { Checkbox, FormControlLabel, TextField } from '@material-ui/core';
 import categoryHttp from '../../util/http/category-http';
-import useForm from 'react-hook-form';
+import { useForm } from "react-hook-form";
 import { useHistory, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';

@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
-import useForm from 'react-hook-form';
+import { useForm } from "react-hook-form";
 import genreHttp from '../../util/http/genre-http';
 import categoryHttp from '../../util/http/category-http';
 import { Category } from '../../util/models';
@@ -132,7 +132,7 @@ export const Form = () => {
                 variant="outlined"
                 value={watch('categories_id')}
                 error={errors.categories_id !== undefined}
-                helperText={errors.categories_id && errors.categories_id.message}
+                //helperText={errors.categories_id && errors.categories_id.message}
                 InputLabelProps={{ shrink: true }}
                 onChange={(e) => {
                     setValue('categories_id', [e.target.value], true);

@@ -21,7 +21,7 @@ const columnsDefinition: TableColumn[] = [
         name: 'id',
         label: 'id',
         options: {
-            display: false,
+            display: 'false',
             filter: false,
         },
         width: '5%'
@@ -83,8 +83,8 @@ const debounceTime = 300;
 const debouncedSearchTime = 300;
 const rowsPerPage = 15;
 const rowsPerPageOptions = [15, 25, 50];
-
 const Table = () => {
+    //const obj = useKeycloak();
 
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
@@ -148,6 +148,7 @@ const Table = () => {
         }
     }
 
+
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>
             <DefaultTable
@@ -159,7 +160,7 @@ const Table = () => {
                 ref={tableRef}
                 options={{
                     serverSide: true,
-                    responsive: "vertical",
+                    responsive: "scrollMaxHeight",
                     searchText: filterState.search as any,
                     page: filterState.pagination.page - 1,
                     rowsPerPage: filterState.pagination.per_page,

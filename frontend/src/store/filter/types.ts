@@ -1,4 +1,4 @@
-import { AnyAction } from 'redux';
+import {AnyAction} from 'redux';
 
 export interface Pagination {
     page: number;
@@ -42,8 +42,8 @@ export interface SetOrderAction extends AnyAction {
     }
 }
 
-export interface UpdateExtraFilterAction extends AnyAction {
-    payload: { [key: string]: any }
+export interface UpdateExtraFilterAction extends AnyAction{
+    payload: {[key: string]: any }
 }
 
 export interface SetResetAction extends AnyAction {
@@ -58,3 +58,8 @@ export type Actions = SetSearchAction
     | SetOrderAction
     | UpdateExtraFilterAction
     | SetResetAction;
+
+//extraFilter: {type: 'Diretor', key: value, key1: value1}
+//extraFilter: {categories: ['nome da categoria1', ]}
+//payload: {type: 'Ator'}
+//payload: {categories: ['1', '21]}

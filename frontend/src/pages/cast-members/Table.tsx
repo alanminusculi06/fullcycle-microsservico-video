@@ -24,7 +24,7 @@ const columnsDefinition: TableColumn[] = [
         label: 'id',
         options: {
             filter: false,
-            display: false
+            display: 'false'
         },
         width: '0%'
     },
@@ -114,9 +114,7 @@ const extraFilter = {
         };
     },
 }
-
 const Table = () => {
-
     const { enqueueSnackbar } = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<CastMember[]>([]);
@@ -139,12 +137,15 @@ const Table = () => {
         tableRef,
         extraFilter,
     });
-
     const searchText = cleanSearchText(debouncedFilterState.search);
+    //?type=Diretor
     const indexColumnType = columns.findIndex((c) => c.name === "type");
     const columnType = columns[indexColumnType];
-    const typeFilterValue = filterState.extraFilter && (filterState.extraFilter.type as never);
-    (columnType.options as any).filterList = typeFilterValue ? [typeFilterValue] : [];
+    const typeFilterValue =
+        filterState.extraFilter && (filterState.extraFilter.type as never);
+    (columnType.options as any).filterList = typeFilterValue
+        ? [typeFilterValue]
+        : [];
 
     const serverSideFilterList = columns.map((column) => []);
     if (typeFilterValue) {
@@ -211,6 +212,7 @@ const Table = () => {
         debouncedFilterState.extraFilter,
     ]);
 
+
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>
             <DefaultTable
@@ -221,9 +223,9 @@ const Table = () => {
                 debouncedSearchTime={debouncedSearchTime}
                 ref={tableRef}
                 options={{
-                    //serverSideFilterList,
+                    serverSideFilterList,
                     serverSide: true,
-                    responsive: "standard",
+                    responsive: "scrollMaxHeight",
                     searchText: filterState.search as any,
                     page: filterState.pagination.page - 1,
                     rowsPerPage: filterState.pagination.per_page,
@@ -231,8 +233,11 @@ const Table = () => {
                     count: totalRecords,
                     onFilterChange: (column, filterList, type) => {
                         const columnIndex = columns.findIndex((c) => c.name === column);
+                        //[ [], [], ['Diretor'], [], []  ]
                         filterManager.changeExtraFilter({
-                            [column as string]: filterList[columnIndex].length ? filterList[columnIndex][0] : 'null',
+                            [column]: filterList[columnIndex].length
+                                ? filterList[columnIndex][0]
+                                : null,
                         });
                     },
                     customToolbar: () => (
@@ -247,7 +252,7 @@ const Table = () => {
                 }}
             />
         </MuiThemeProvider>
-    )
+    );
 };
 
 export default Table;
