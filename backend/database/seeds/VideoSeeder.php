@@ -1,13 +1,11 @@
 <?php
 
+use App\Models\CastMember;
 use App\Models\Genre;
 use App\Models\Video;
-use App\Models\CastMember;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File as FacadesFile;
-use Illuminate\Support\Facades\Storage;
 
 class VideoSeeder extends Seeder
 {
@@ -15,38 +13,45 @@ class VideoSeeder extends Seeder
     private $allCastMembers;
     private $relations = [
         'genres_id' => [],
-        'categories_id' => []
+        'categories_id' => [],
+        'cast_members_id' => []
     ];
 
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
     public function run()
     {
-        $dir = Storage::getDriver()->getAdapter()->getPathPrefix();
-        FacadesFile::deleteDirectory($dir, true);
+        $dir = \Storage::getDriver()->getAdapter()->getPathPrefix();
+        \File::deleteDirectory($dir, true);
 
         $self = $this;
         $this->allGenres = Genre::all();
         $this->allCastMembers = CastMember::all();
-        Model::reguard();
-        factory(Video::class, 30)
+        Model::reguard(); 
+        factory(Video::class, 100)
             ->make()
             ->each(function (Video $video) use ($self) {
                 $self->fetchRelations();
                 Video::create(
                     array_merge(
-                        $video->toArray(),
+                        $video->toArray(), 
                         [
                             'thumb_file' => $self->getImageFile(),
                             'banner_file' => $self->getImageFile(),
                             'trailer_file' => $self->getVideoFile(),
                             'video_file' => $self->getVideoFile(),
-                        ]
+                        ],
+                        $this->relations
                     )
                 );
             });
         Model::unguard();
     }
 
-    private function fetchRelations()
+    public function fetchRelations()
     {
         $subGenres = $this->allGenres->random(5)->load('categories');
         $categoriesId = [];
@@ -64,7 +69,7 @@ class VideoSeeder extends Seeder
     {
         return new UploadedFile(
             storage_path('faker/thumbs/Laravel Framework.jpg'),
-            'Laravel Framework.png'
+            'Laravel Framework.jpg'
         );
     }
 

@@ -7,7 +7,8 @@ RUN apk add --no-cache openssl \
     npm \
     freetype-dev \
     libjpeg-turbo-dev \
-    libpng-dev
+    libpng-dev \
+    dos2unix
 
 RUN touch /root/.bashrc | echo "PS1='\w\$ '" >> /root/.bashrc
 
