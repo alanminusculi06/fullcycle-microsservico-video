@@ -7,7 +7,7 @@ import Page from '../../components/Page';
 
 const PageList = () => {
     return (
-        <Page title={'Listagem de vídeos'}>
+        <Page title={'Vídeos'}>
             <Box dir={'rtl'} paddingBottom={2}>
                 <Fab
                     title="Adicionar vídeo"

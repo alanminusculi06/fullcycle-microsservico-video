@@ -15,7 +15,6 @@ export interface InputFileComponent {
     clear: () => void
 }
 
-
 const InputFile = React.forwardRef<InputFileComponent, InputFileProps>((props, ref) => {
     const fileRef = useRef() as MutableRefObject<HTMLInputElement>;
     const [filename, setFilename] = useState("");
@@ -37,7 +36,6 @@ const InputFile = React.forwardRef<InputFileComponent, InputFileProps>((props, r
         },
         value: filename
     };
-
 
     const inputFileProps = {
         ...props.InputFileProps,

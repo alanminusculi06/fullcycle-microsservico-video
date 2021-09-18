@@ -1,24 +1,14 @@
 import * as React from 'react';
-import {
-    Card, CardContent,
-    Checkbox,
-    FormControlLabel,
-    Grid, makeStyles,
-    TextField, Theme,
-    Typography,
-    useMediaQuery,
-    useTheme
-} from "@material-ui/core";
+import * as yup from '../../../util/vendor/yup';
+import { Card, CardContent, Checkbox, FormControlLabel, Grid, makeStyles, TextField, Theme, Typography, useMediaQuery, useTheme } from "@material-ui/core";
 import { useForm } from "react-hook-form";
 import videoHttp from "../../../util/http/video-http";
-import * as yup from '../../../util/vendor/yup';
 import { createRef, MutableRefObject, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useParams, useHistory } from "react-router";
 import { useSnackbar } from "notistack";
 import { Video, VideoFileFieldsMap } from "../../../util/models";
 import SubmitActions from "../../../components/SubmitActions";
 import { omit, zipObject } from 'lodash';
-import { useDispatch } from "react-redux";
 import LoadingContext from '../../../components/Loading/LoadingContext';
 import DefaultForm from '../../../components/DefaultForm';
 import RatingField from './RatingField';
@@ -68,7 +58,7 @@ const validationSchema = yup.object().shape({
         .required()
         .test({
             message: 'Cada gênero escolhido precisa ter pelo menos uma categoria selecionada',
-            test(value) { //array genres [{name, categories: []}]
+            test(value) {
                 return value.every(
                     v => v.categories.filter(
                         cat => this.parent.categories.map(c => c.id).includes(cat.id)
@@ -85,7 +75,6 @@ const validationSchema = yup.object().shape({
 });
 
 const fileFields = Object.keys(VideoFileFieldsMap);
-
 
 export const Form = () => {
     const {
@@ -120,6 +109,7 @@ export const Form = () => {
     });
 
     useSnackbarFormError(formState.submitCount, errors);
+
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
     const history = useHistory();
@@ -135,23 +125,15 @@ export const Form = () => {
         zipObject(fileFields, fileFields.map(() => createRef()))
     ) as MutableRefObject<{ [key: string]: MutableRefObject<InputFileComponent> }>;
 
-    //const dispatch = useDispatch();
-    //instancia mapa Google Maps
-
-    //ref pode ou não useState
-    // const resetForm = useCallback((data) => {
-    //     Object.keys(uploadsRef.current).forEach(
-    //         field => uploadsRef.current[field].current.clear()
-    //     );
-    //     castMemberRef.current.clear();
-    //     genreRef.current.clear();
-    //     categoryRef.current.clear();
-    //     reset(data);
-    // }, [castMemberRef, categoryRef, genreRef, reset, uploadsRef]);
-
     const resetForm = useCallback((data) => {
-
-    }, []);
+        Object.keys(uploadsRef.current).forEach(
+            field => uploadsRef.current[field].current.clear()
+        );
+        castMemberRef.current.clear();
+        genreRef.current.clear();
+        categoryRef.current.clear();
+        reset(data);
+    }, [castMemberRef, categoryRef, genreRef, reset, uploadsRef]);
 
     useEffect(() => {
         [
@@ -168,6 +150,7 @@ export const Form = () => {
         if (!id) {
             return;
         }
+
         let isSubscribed = true;
 
         (async () => {
@@ -202,13 +185,13 @@ export const Form = () => {
         try {
             const http = !video
                 ? videoHttp.create(sendData)
-                : videoHttp.update(video.id, sendData);
+                : videoHttp.update(video.id, { ...sendData, _method: 'PUT' }, { http: { usePost: true } });
             const { data } = await http;
             enqueueSnackbar(
                 'Vídeo salvo com sucesso',
                 { variant: 'success' }
             );
-            uploadFiles(data.data);
+        
             id && resetForm(video);
             setTimeout(() => {
                 event
@@ -226,31 +209,6 @@ export const Form = () => {
                 { variant: 'error' }
             )
         }
-    }
-
-    function uploadFiles(video) {
-        // const files: FileInfo[] = fileFields
-        //     .filter(fileField => getValues()[fileField])
-        //     .map(fileField => ({ fileField, file: getValues()[fileField] as File }));
-
-        // if (!files.length) {
-        //     return;
-        // }
-
-        // dispatch(Creators.addUpload({ video, files }));
-
-        // enqueueSnackbar('', {
-        //     key: 'snackbar-upload',
-        //     persist: true,
-        //     anchorOrigin: {
-        //         vertical: 'bottom',
-        //         horizontal: 'right'
-        //     },
-        //     content: (key, message) => {
-        //         const id = key as any;
-        //         return <SnackbarUpload id={id} />
-        //     }
-        // });
     }
 
     return (
