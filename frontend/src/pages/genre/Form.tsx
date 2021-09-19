@@ -12,6 +12,7 @@ import categoryHttp from '../../util/http/category-http';
 import { Category } from '../../util/models';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
+import useSnackbarFormError from '../../hooks/useSnackbarFormError';
 
 const validationSchema = yup.object().shape({
     name: yup.string().label('Nome').required().max(255),
@@ -20,22 +21,40 @@ const validationSchema = yup.object().shape({
 
 export const Form = () => {
 
+    // const {
+    //     register,
+    //     handleSubmit,
+    //     getValues,
+    //     setValue,
+    //     watch,
+    //     reset,
+    //     triggerValidation,
+    //     errors
+    // } = useForm({
+    //     validationSchema,
+    //     defaultValues: {
+    //         categories_id: ['']
+    //     }
+    // });
+
     const {
         register,
         handleSubmit,
         getValues,
         setValue,
         watch,
+        errors,
         reset,
         triggerValidation,
-        errors
-    } = useForm({
+        formState
+    } = useForm<{name, categories_id}>({
         validationSchema,
         defaultValues: {
-            categories_id: [''],
-            name: undefined
+            categories_id: []
         }
     });
+
+    useSnackbarFormError(formState.submitCount, errors);
 
     const history = useHistory();
     const snackbar = useSnackbar();
@@ -132,7 +151,7 @@ export const Form = () => {
                 variant="outlined"
                 value={watch('categories_id')}
                 error={errors.categories_id !== undefined}
-                //helperText={errors.categories_id && errors.categories_id.message}
+                helperText={errors.categories_id && errors.categories_id.message as any}
                 InputLabelProps={{ shrink: true }}
                 onChange={(e) => {
                     setValue('categories_id', [e.target.value], true);

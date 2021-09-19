@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
+import useSnackbarFormError from '../../hooks/useSnackbarFormError';
 
 const validationSchema = yup.object().shape({
     name: yup.string().label("Nome").required().max(255),
@@ -24,9 +25,12 @@ export const Form = () => {
         setValue,
         triggerValidation,
         errors,
+        formState
     } = useForm({
         validationSchema
     });
+
+    useSnackbarFormError(formState.submitCount, errors);
 
     const history = useHistory();
     const snackbar = useSnackbar();
