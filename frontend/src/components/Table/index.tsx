@@ -1,9 +1,9 @@
 import * as React from 'react';
-import MUIDataTable, {MUIDataTableColumn, MUIDataTableOptions, MUIDataTableProps} from "mui-datatables";
-import {merge, omit, cloneDeep} from 'lodash';
-import {MuiThemeProvider, Theme, useMediaQuery, useTheme} from "@material-ui/core";
+import MUIDataTable, { MUIDataTableColumn, MUIDataTableOptions, MUIDataTableProps } from "mui-datatables";
+import { merge, omit, cloneDeep } from 'lodash';
+import { MuiThemeProvider, Theme, useMediaQuery, useTheme } from "@material-ui/core";
 import DebouncedTableSearch from "./DebouncedTableSearch";
-import {RefAttributes} from "react";
+import { RefAttributes } from "react";
 
 const makeDefaultOptions = (debouncedSearchTime?): MUIDataTableOptions => ({
     print: false,
@@ -42,9 +42,9 @@ const makeDefaultOptions = (debouncedSearchTime?): MUIDataTableOptions => ({
         },
     },
     customSearchRender: (searchText: string,
-                         handleSearch: any,
-                         hideSearch: any,
-                         options: any) => {
+        handleSearch: any,
+        hideSearch: any,
+        options: any) => {
         return <DebouncedTableSearch
             searchText={searchText}
             onSearch={handleSearch}
@@ -113,9 +113,9 @@ const Table = React.forwardRef<MuiDataTableRefComponent, TableProps>((props, ref
     const defaultOptions = makeDefaultOptions(props.debouncedSearchTime);
 
     const newProps = merge(
-        {options: cloneDeep(defaultOptions)},
+        { options: cloneDeep(defaultOptions) },
         props,
-        {columns: extractMuiDataTableColumns(props.columns)},
+        { columns: extractMuiDataTableColumns(props.columns) },
     );
 
     applyLoading();
@@ -125,7 +125,7 @@ const Table = React.forwardRef<MuiDataTableRefComponent, TableProps>((props, ref
 
     return (
         <MuiThemeProvider theme={theme}>
-            <MUIDataTable {...originalProps}/>
+            <MUIDataTable {...originalProps} />
         </MuiThemeProvider>
     );
 });

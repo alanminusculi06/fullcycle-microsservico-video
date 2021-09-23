@@ -1,6 +1,6 @@
-import {AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelTokenSource} from "axios";
+import { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelTokenSource } from "axios";
 import axios from 'axios';
-import {objectToFormData} from "object-to-formdata";
+import { objectToFormData } from "object-to-formdata";
 
 export default class HttpResource {
 
@@ -10,7 +10,7 @@ export default class HttpResource {
 
     }
 
-    list<T = any>(options?: { queryParams? }): Promise<AxiosResponse<T>> {
+    list<T = any>(options?: { queryParams?}): Promise<AxiosResponse<T>> {
         if (this.cancelList) {
             this.cancelList.cancel('list request cancelled');
         }
@@ -39,7 +39,7 @@ export default class HttpResource {
         if (this.containsFile(data)) {
             sendData = this.getFormData(data);
         }
-        const {http, config} = (options || {}) as any;
+        const { http, config } = (options || {}) as any;
         return !options || !http || !http.usePost
             ? this.http.put<T>(`${this.resource}/${id}`, sendData, config)
             : this.http.post<T>(`${this.resource}/${id}`, sendData, config)
@@ -50,7 +50,7 @@ export default class HttpResource {
         if (this.containsFile(data)) {
             sendData = this.getFormData(data);
         }
-        const {http, config} = (options || {}) as any;
+        const { http, config } = (options || {}) as any;
         return !options || !http || !http.usePost
             ? this.http.patch<T>(`${this.resource}/${id}`, sendData, config)
             : this.http.post<T>(`${this.resource}/${id}`, sendData, config)
@@ -61,7 +61,7 @@ export default class HttpResource {
     }
 
     deleteCollection<T = any>(queryParams): Promise<AxiosResponse<T>> {
-        const config:AxiosRequestConfig = {};
+        const config: AxiosRequestConfig = {};
         if (queryParams) {
             config['params'] = queryParams;
         }
@@ -77,24 +77,7 @@ export default class HttpResource {
     }
 
     private getFormData(data) {
-        // const formData = new FormData();
-        // Object
-        //     .keys(data)
-        //     .forEach(key => {
-        //         let value = data[key];
-        //         if (typeof value === "undefined") {
-        //             return;
-        //         }
-        //         if (typeof value === "boolean") {
-        //             value = value ? 1 : 0;
-        //         }
-        //         if(value instanceof Array){
-        //             value.forEach(v => formData.append(`${key}[]`, v))
-        //             return;
-        //         }
-        //         formData.append(key, value)
-        //     });
-        return objectToFormData(data, {booleansAsIntegers: true});
+        return objectToFormData(data, { booleansAsIntegers: true });
     }
 
     private containsFile(data) {

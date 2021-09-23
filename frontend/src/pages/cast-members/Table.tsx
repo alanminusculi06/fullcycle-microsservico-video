@@ -14,6 +14,8 @@ import castMemberHttp from '../../util/http/cast-member-http';
 import DefaultTable, { makeActionStyles, TableColumn, MuiDataTableRefComponent } from '../../components/Table';
 import EditIcon from '@material-ui/icons/Edit';
 import useFilter from "../../hooks/useFilter";
+import DeleteDialog from '../../components/DeleteDialog';
+import useDeleteCollection from '../../hooks/useDeleteCollection';
 
 
 const castMemberNames = Object.values(CastMemberTypeMap);
@@ -115,11 +117,14 @@ const extraFilter = {
     },
 }
 const Table = () => {
+
+    const snackbar = useSnackbar();
     const { enqueueSnackbar } = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<CastMember[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
+    const { openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete } = useDeleteCollection();
 
     const {
         columns,
@@ -138,83 +143,95 @@ const Table = () => {
         extraFilter,
     });
     const searchText = cleanSearchText(debouncedFilterState.search);
-    //?type=Diretor
     const indexColumnType = columns.findIndex((c) => c.name === "type");
     const columnType = columns[indexColumnType];
-    const typeFilterValue =
-        filterState.extraFilter && (filterState.extraFilter.type as never);
-    (columnType.options as any).filterList = typeFilterValue
-        ? [typeFilterValue]
-        : [];
+    const typeFilterValue = filterState.extraFilter && (filterState.extraFilter.type as never);
+    (columnType.options as any).filterList = typeFilterValue ? [typeFilterValue] : [];
 
     const serverSideFilterList = columns.map((column) => []);
     if (typeFilterValue) {
         serverSideFilterList[indexColumnType] = [typeFilterValue];
     }
 
-    const getData = useCallback(
-        async ({ search, page, per_page, sort, dir, type }) => {
-            setLoading(true);
-            try {
-                const { data } = await castMemberHttp.list<ListResponse<CastMember>>({
-                    queryParams: {
-                        search,
-                        page,
-                        per_page,
-                        sort,
-                        dir,
-                        ...(type && {
-                            type: invert(CastMemberTypeMap)[type],
-                        }),
-                    },
-                });
-                if (subscribed.current) {
-                    setData(data.data);
-                    setTotalRecords(data.meta.total);
-                }
-            } catch (error) {
-                console.error(error);
-                if (castMemberHttp.isCancelledRequest(error)) {
-                    return;
-                }
-                enqueueSnackbar("Não foi possível carregar as informações", {
-                    variant: "error",
-                });
-            } finally {
-                setLoading(false);
-            }
-        },
-        [enqueueSnackbar, setTotalRecords]
-    );
-
     useEffect(() => {
         subscribed.current = true;
-        getData({
-            search: searchText,
-            page: debouncedFilterState.pagination.page,
-            per_page: debouncedFilterState.pagination.per_page,
-            sort: debouncedFilterState.order.sort,
-            dir: debouncedFilterState.order.dir,
-            ...(debouncedFilterState.extraFilter &&
-                debouncedFilterState.extraFilter.type && {
-                type: debouncedFilterState.extraFilter.type,
-            }),
-        });
+        getData();
         return () => {
             subscribed.current = false;
-        };
+        }
     }, [
-        getData,
-        searchText,
+        cleanSearchText(debouncedFilterState.search),
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
-        debouncedFilterState.order,
-        debouncedFilterState.extraFilter,
+        debouncedFilterState.order
     ]);
 
+    async function getData() {
+        try {
+            const { data } = await castMemberHttp.list<ListResponse<CastMember>>({
+                queryParams: {
+                    search: cleanSearchText(debouncedFilterState.search),
+                    page: debouncedFilterState.pagination.page,
+                    per_page: debouncedFilterState.pagination.per_page,
+                    sort: debouncedFilterState.order.sort,
+                    dir: debouncedFilterState.order.dir,
+                }
+            });
+            if (subscribed.current) {
+                setData(data.data);
+                setTotalRecords(data.meta.total);
+            }
+        } catch (error) {
+            console.error(error);
+            if (castMemberHttp.isCancelledRequest(error)) {
+                return;
+            }
+            snackbar.enqueueSnackbar(
+                'Não foi possível carregar as informações',
+                { variant: 'error', }
+            )
+        }
+    }
+
+    function deleteRows(confirmed: boolean) {
+        if (!confirmed) {
+            setOpenDeleteDialog(false);
+            return;
+        }
+        const ids = rowsToDelete
+            .data
+            .map(value => data[value.index].id)
+            .join(',');
+        castMemberHttp
+            .deleteCollection({ ids })
+            .then(response => {
+                setOpenDeleteDialog(false);
+                snackbar.enqueueSnackbar(
+                    'Registros excluídos com sucesso',
+                    { variant: 'success' }
+                );
+                if (
+                    rowsToDelete.data.length === filterState.pagination.per_page
+                    && filterState.pagination.page > 1
+                ) {
+                    const page = filterState.pagination.page - 2;
+                    filterManager.changePage(page);
+                } else {
+                    getData();
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                snackbar.enqueueSnackbar(
+                    'Não foi possível excluir os registros',
+                    { variant: 'error', }
+                )
+            })
+    }
 
     return (
         <MuiThemeProvider theme={makeActionStyles(columnsDefinition.length - 1)}>
+            <DeleteDialog open={openDeleteDialog} handleClose={deleteRows} />
             <DefaultTable
                 title=""
                 columns={columns}
@@ -233,7 +250,6 @@ const Table = () => {
                     count: totalRecords,
                     onFilterChange: (column, filterList, type) => {
                         const columnIndex = columns.findIndex((c) => c.name === column);
-                        //[ [], [], ['Diretor'], [], []  ]
                         filterManager.changeExtraFilter({
                             [column]: filterList[columnIndex].length
                                 ? filterList[columnIndex][0]
@@ -249,6 +265,10 @@ const Table = () => {
                     onChangePage: (page) => filterManager.changePage(page),
                     onChangeRowsPerPage: (perPage) => filterManager.changeRowsPerPage(perPage),
                     onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction),
+                    onRowsDelete: (rowsDeleted: any) => {
+                        setRowsToDelete(rowsDeleted as any);
+                        return false;
+                    },
                 }}
             />
         </MuiThemeProvider>
