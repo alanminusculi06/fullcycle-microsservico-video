@@ -18,6 +18,10 @@ import UploadField from './UploadField';
 import CastMemberField, { CastMemberFieldComponent } from './CastMemberField';
 import GenreField, { GenreFieldComponent } from './GenreField';
 import CategoryField, { CategoryFieldComponent } from './CategoryField';
+import { useDispatch } from 'react-redux';
+import { FileInfo } from '../../../store/upload/types';
+import { Creators } from '../../../store/upload';
+import SnackbarUpload from '../../../components/SnackbarUpload';
 
 const useStyles = makeStyles((theme: Theme) => ({
     cardUpload: {
@@ -125,6 +129,8 @@ export const Form = () => {
         zipObject(fileFields, fileFields.map(() => createRef()))
     ) as MutableRefObject<{ [key: string]: MutableRefObject<InputFileComponent> }>;
 
+    const dispatch = useDispatch();
+
     const resetForm = useCallback((data) => {
         Object.keys(uploadsRef.current).forEach(
             field => uploadsRef.current[field].current.clear()
@@ -191,7 +197,7 @@ export const Form = () => {
                 'Vídeo salvo com sucesso',
                 { variant: 'success' }
             );
-        
+            uploadFiles(data.data);
             id && resetForm(video);
             setTimeout(() => {
                 event
@@ -209,6 +215,31 @@ export const Form = () => {
                 { variant: 'error' }
             )
         }
+    }
+
+    function uploadFiles(video) {
+        const files: FileInfo[] = fileFields
+            .filter(fileField => getValues()[fileField])
+            .map(fileField => ({ fileField, file: getValues()[fileField] as File }));
+
+        if (!files.length) {
+            return;
+        }
+
+        dispatch(Creators.addUpload({ video, files }));
+
+        enqueueSnackbar('', {
+            key: 'snackbar-upload',
+            persist: true,
+            anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'right'
+            },
+            content: (key, message) => {
+                const id = key as any;
+                return <SnackbarUpload id={id} />
+            }
+        });
     }
 
     return (

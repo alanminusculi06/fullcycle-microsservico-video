@@ -5,11 +5,12 @@ import { Checkbox, FormControlLabel, TextField } from '@material-ui/core';
 import categoryHttp from '../../util/http/category-http';
 import { useForm } from "react-hook-form";
 import { useHistory, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useSnackbar } from 'notistack';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
 import useSnackbarFormError from '../../hooks/useSnackbarFormError';
+import LoadingContext from '../../components/Loading/LoadingContext';
 
 const validationSchema = yup.object().shape({
     name: yup.string().label("Nome").required().max(255),
@@ -35,23 +36,20 @@ export const Form = () => {
     const history = useHistory();
     const snackbar = useSnackbar();
     const { id } = useParams<{ id: string }>();
-    const [loading, setLoading] = useState<boolean>(false);
     const [ativo, setAtivo] = useState<boolean>(true);
+    const loading = useContext(LoadingContext);
 
     useEffect(() => {
         let isSubscribed = true;
 
         (async () => {
             if (!id) return;
-            setLoading(true);
             try {
                 const { data } = await categoryHttp.get(id);
                 if (isSubscribed) reset(data.data);
             } catch (error) {
                 console.log(error);
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
-            } finally {
-                setLoading(false);
             }
         })();
 
@@ -61,7 +59,6 @@ export const Form = () => {
     }, [])
 
     async function onSubmit(formData, event) {
-        setLoading(true);
         try {
             const http = !id
                 ? categoryHttp.create(formData)
@@ -81,8 +78,6 @@ export const Form = () => {
         } catch (error) {
             console.log(error);
             snackbar.enqueueSnackbar('Não foi possível salvar a categoria.', { variant: 'error' });
-        } finally {
-            setLoading(false);
         }
     }
 

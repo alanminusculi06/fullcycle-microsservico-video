@@ -53,10 +53,15 @@ class VideoController extends BasicCrudController
     public function update(Request $request, $id)
     {
         $obj = $this->findOrFail($id);
-        $this->addRuleIfGenresHasCategories($request);
-        $validatedData = $this->validate($request, $this->rulesUpdate());
+        $this->addRuleIfGenreHasCategories($request);
+        $validatedData = $this->validate(
+            $request,
+            $request->isMethod('PUT') ? $this->rulesUpdate() : $this->rulesPatch()
+        );
+
         $obj->update($validatedData);
         $resource = $this->resource();
+        $obj->load($this->queryBuilder()->getEagerLoads());
         return new $resource($obj);
     }
 

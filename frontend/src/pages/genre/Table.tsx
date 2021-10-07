@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
 import * as yup from "../../util/vendor/yup";
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { parseISO, format } from 'date-fns';
 import { BadgeNo, BadgeYes } from '../../components/Badge';
 import { Category, Genre, ListResponse } from '../../util/models';
@@ -16,6 +16,7 @@ import categoryHttp from "../../util/http/category-http";
 import { FilterResetButton } from '../../components/Table/FilterResetButton';
 import useDeleteCollection from '../../hooks/useDeleteCollection';
 import DeleteDialog from '../../components/DeleteDialog';
+import LoadingContext from '../../components/Loading/LoadingContext';
 
 
 const columnsDefinition: TableColumn[] = [
@@ -132,9 +133,9 @@ const Table = () => {
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<Genre[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const { openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete } = useDeleteCollection();
+    const loading = useContext(LoadingContext);
 
     const {
         columns,
@@ -200,7 +201,6 @@ const Table = () => {
     ]);
 
     async function getData() {
-        setLoading(true);
         try {
             const { data } = await genreHttp.list<ListResponse<Genre>>({
                 queryParams: {
@@ -229,8 +229,6 @@ const Table = () => {
                 'Não foi possível carregar as informações',
                 { variant: 'error', }
             )
-        } finally {
-            setLoading(false);
         }
     }
 

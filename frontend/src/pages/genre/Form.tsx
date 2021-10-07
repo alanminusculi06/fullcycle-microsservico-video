@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as yup from '../../../src/util/vendor/yup';
 import { MenuItem, TextField } from '@material-ui/core';
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ import { Category } from '../../util/models';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
 import useSnackbarFormError from '../../hooks/useSnackbarFormError';
+import LoadingContext from '../../components/Loading/LoadingContext';
 
 const validationSchema = yup.object().shape({
     name: yup.string().label('Nome').required().max(255),
@@ -20,22 +21,6 @@ const validationSchema = yup.object().shape({
 })
 
 export const Form = () => {
-
-    // const {
-    //     register,
-    //     handleSubmit,
-    //     getValues,
-    //     setValue,
-    //     watch,
-    //     reset,
-    //     triggerValidation,
-    //     errors
-    // } = useForm({
-    //     validationSchema,
-    //     defaultValues: {
-    //         categories_id: ['']
-    //     }
-    // });
 
     const {
         register,
@@ -47,7 +32,7 @@ export const Form = () => {
         reset,
         triggerValidation,
         formState
-    } = useForm<{name, categories_id}>({
+    } = useForm<{ name, categories_id }>({
         validationSchema,
         defaultValues: {
             categories_id: []
@@ -59,8 +44,8 @@ export const Form = () => {
     const history = useHistory();
     const snackbar = useSnackbar();
     const { id } = useParams<{ id: string }>();
-    const [loading, setLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[]>([]);
+    const loading = useContext(LoadingContext);
 
     useEffect(() => {
         register({ name: 'categories_id' })
@@ -70,8 +55,6 @@ export const Form = () => {
         let isSubscribed = true;
 
         (async () => {
-            setLoading(true);
-
             const promises = [categoryHttp.list({ queryParams: { all: '' } })];
 
             if (id) promises.push(genreHttp.get(id))
@@ -90,8 +73,6 @@ export const Form = () => {
             } catch (error) {
                 console.error(error);
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações.', { variant: 'error' })
-            } finally {
-                setLoading(false);
             }
         })();
 
@@ -102,7 +83,6 @@ export const Form = () => {
 
 
     async function onSubmit(formData, event) {
-        setLoading(true);
         try {
             const http = !id
                 ? genreHttp.create(formData)
@@ -122,8 +102,6 @@ export const Form = () => {
         } catch (error) {
             console.error(error);
             snackbar.enqueueSnackbar('Não foi possível salvar o gênero.', { variant: 'error' });
-        } finally {
-            setLoading(false);
         }
     }
 

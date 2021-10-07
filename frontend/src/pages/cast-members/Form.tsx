@@ -5,12 +5,13 @@ import { FormControl, FormControlLabel, FormHelperText, FormLabel, Radio, RadioG
 import { useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { useState } from 'react';
+import { useContext } from 'react';
 import { useForm } from "react-hook-form";
 import castMemberHttp from '../../util/http/cast-member-http';
 import SubmitActions from '../../components/SubmitActions';
 import DefaultForm from '../../components/DefaultForm';
 import useSnackbarFormError from '../../hooks/useSnackbarFormError';
+import LoadingContext from '../../components/Loading/LoadingContext';
 
 const validationSchema = yup.object().shape({
     name: yup.string().label('Nome').required().max(255),
@@ -38,7 +39,7 @@ export const Form = () => {
     const history = useHistory();
     const snackbar = useSnackbar();
     const { id } = useParams<{ id: string }>();
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
 
     useEffect(() => {
         register({ name: "type" })
@@ -49,15 +50,12 @@ export const Form = () => {
 
         (async () => {
             if (!id) return;
-            setLoading(true);
             try {
                 const { data } = await castMemberHttp.get(id);
                 if (isSubscribed) reset(data.data);
             } catch (error) {
                 console.error(error);
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações', { variant: 'error' })
-            } finally {
-                setLoading(false);
             }
         })();
 
@@ -67,7 +65,6 @@ export const Form = () => {
     }, [])
 
     async function onSubmit(formData, event) {
-        setLoading(true);
         try {
             const http = !id
                 ? castMemberHttp.create(formData)
@@ -87,8 +84,6 @@ export const Form = () => {
         } catch (error) {
             console.log(error);
             snackbar.enqueueSnackbar('Não foi possível salvar a pessoa.', { variant: 'error' });
-        } finally {
-            setLoading(false);
         }
     }
 

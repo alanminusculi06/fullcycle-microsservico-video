@@ -1,14 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
 import * as yup from "../../util/vendor/yup";
-import { useState, useCallback, useRef } from 'react';
-import { useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { useEffect, useContext } from 'react';
 import { parseISO, format } from 'date-fns';
 import { CastMember, CastMemberTypeMap, ListResponse } from '../../util/models';
 import { useSnackbar } from 'notistack';
 import { Link } from 'react-router-dom';
 import { IconButton, MuiThemeProvider } from '@material-ui/core';
-import { invert } from "lodash";
 import { FilterResetButton } from '../../components/Table/FilterResetButton';
 import castMemberHttp from '../../util/http/cast-member-http';
 import DefaultTable, { makeActionStyles, TableColumn, MuiDataTableRefComponent } from '../../components/Table';
@@ -16,6 +15,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import useFilter from "../../hooks/useFilter";
 import DeleteDialog from '../../components/DeleteDialog';
 import useDeleteCollection from '../../hooks/useDeleteCollection';
+import LoadingContext from '../../components/Loading/LoadingContext';
 
 
 const castMemberNames = Object.values(CastMemberTypeMap);
@@ -119,12 +119,11 @@ const extraFilter = {
 const Table = () => {
 
     const snackbar = useSnackbar();
-    const { enqueueSnackbar } = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<CastMember[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
     const { openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete } = useDeleteCollection();
+    const loading = useContext(LoadingContext);
 
     const {
         columns,
@@ -142,7 +141,7 @@ const Table = () => {
         tableRef,
         extraFilter,
     });
-    const searchText = cleanSearchText(debouncedFilterState.search);
+
     const indexColumnType = columns.findIndex((c) => c.name === "type");
     const columnType = columns[indexColumnType];
     const typeFilterValue = filterState.extraFilter && (filterState.extraFilter.type as never);
