@@ -19,16 +19,20 @@ const validationSchema = yup.object().shape({
 export const Form = () => {
 
     const {
+        formState,
         register,
         handleSubmit,
         getValues,
-        reset,
         setValue,
-        triggerValidation,
         errors,
-        formState
-    } = useForm({
-        validationSchema
+        reset,
+        watch,
+        triggerValidation
+    } = useForm<{name, is_active}>({
+        validationSchema,
+        defaultValues: {
+            is_active: true
+        }
     });
 
     useSnackbarFormError(formState.submitCount, errors);
