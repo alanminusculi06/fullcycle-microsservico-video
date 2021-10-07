@@ -5,7 +5,7 @@ services:
     app:
         build: .
         container_name: micro-videos-app
-        entrypoint: dockerize -wait tcp://db:3306 -timeout 40s bash -c "dos2unix ./.docker/entrypoint.sh && chmod +x ./.docker/entrypoint.sh && ./.docker/entrypoint.sh"
+        entrypoint: dockerize -wait tcp://db:3306 -timeout 40s ./.docker/entrypoint.sh
         ports:
             - "3000:3000"
             - "35729:35729"
@@ -45,7 +45,7 @@ services:
             - ./.docker/dbdata:/var/lib/mysql
             - ./.docker/mysql:/docker-entrypoint-initdb.d
         environment:
-            - MYSQL_ROOT_PASSWORD=root            
+            - MYSQL_ROOT_PASSWORD=root
         networks:
             - app-network
 
@@ -56,6 +56,13 @@ services:
             - 6379
         networks:
             - app-network
+    
+    selenium:
+        image: selenium/standalone-chrome
+        expose:
+           - 4444
+        networks:
+           - app-network
 
 networks:
     app-network:
