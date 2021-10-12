@@ -3,7 +3,6 @@ import React from "react";
 import UploadProgress from "../../components/UploadProgress";
 import UploadAction from "./UploadAction";
 import MovieIcon from "@material-ui/icons/Movie";
-import ImageIcon from '@material-ui/icons/Image';
 import { FileUpload, Upload } from "../../store/upload/types";
 
 const useStyles = makeStyles((theme: Theme) => {

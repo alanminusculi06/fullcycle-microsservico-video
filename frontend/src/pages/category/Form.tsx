@@ -26,7 +26,6 @@ export const Form = () => {
         setValue,
         errors,
         reset,
-        watch,
         triggerValidation
     } = useForm<{name, is_active}>({
         validationSchema,
