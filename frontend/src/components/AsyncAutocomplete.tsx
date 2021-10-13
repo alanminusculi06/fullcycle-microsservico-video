@@ -83,10 +83,10 @@ const AsyncAutocomplete = React.forwardRef<AsyncAutocompleteComponent, AsyncAuto
         if (!open) {
             return;
         }
+        
         if (debouncedSearchText === "" && freeSolo) {
             return;
         }
-
 
         let isSubscribed = true;
         (async () => {

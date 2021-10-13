@@ -29,18 +29,14 @@ const CastMemberField = React.forwardRef<CastMemberFieldComponent, CastMemberFie
         error,
         disabled
     } = props;
+
     const autocompleteHttp = useHttpHandled();
     const { addItem, removeItem } = useCollectionManager(castMembers, setCastMembers);
     const autocompleteRef = useRef() as MutableRefObject<AsyncAutocompleteComponent>;
 
     const fetchOptions = useCallback((searchText) => {
         return autocompleteHttp(
-            castMemberHttp
-                .list({
-                    queryParams: {
-                        search: searchText, all: ""
-                    }
-                })
+            castMemberHttp.list({ queryParams: { search: searchText, all: "" } })
         ).then(data => data.data)
     }, [autocompleteHttp]);
 
